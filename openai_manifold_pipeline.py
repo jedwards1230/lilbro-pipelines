@@ -85,7 +85,7 @@ class Pipeline:
                 return [
                     {
                         "id": "error",
-                        "name": "Could not fetch models from OpenAI, please update the API Key in the valves.",
+                        "name": "Error fetching OpenAI models: " + str(e),
                     },
                 ]
         else:
@@ -94,11 +94,7 @@ class Pipeline:
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
-        # This is where you can add your custom pipelines like RAG.
         print(f"pipe:{__name__}")
-
-        print(messages)
-        print(user_message)
 
         headers = {}
         headers["Authorization"] = f"Bearer {self.valves.OPENAI_API_KEY}"
@@ -125,19 +121,17 @@ class Pipeline:
         if "title" in payload:
             del payload["title"]
 
-        print(payload)
-
         try:
             r = requests.post(
                 url=f"{self.valves.OPENAI_API_BASE_URL}/chat/completions",
                 json=payload,
                 headers=headers,
-                stream=body["stream"],
+                stream=body.get("stream", True),
             )
 
             r.raise_for_status()
 
-            if body["stream"]:
+            if body.get("stream", False):
                 return r.iter_lines()
             else:
                 return r.json()

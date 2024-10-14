@@ -18,7 +18,7 @@ from typing import List, Union, Generator, Iterator
 
 import boto3
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import os
 import requests
@@ -28,9 +28,34 @@ from utils.pipelines.main import pop_system_message
 
 class Pipeline:
     class Valves(BaseModel):
-        AWS_ACCESS_KEY: str = ""
-        AWS_SECRET_KEY: str = ""
-        AWS_REGION_NAME: str = ""
+        AWS_ACCESS_KEY: str = Field(
+            default="",
+            description="Required AWS access key to retrieve the model list.",
+        )
+        AWS_SECRET_KEY: str = Field(
+            default="",
+            description="Required AWS secret key to retrieve the model list.",
+        )
+        AWS_REGION_NAME: str = Field(
+            default="us-east-1",
+            description="The AWS region name.",
+        )
+        pass
+
+    class UserValves(BaseModel):
+        AWS_ACCESS_KEY: str = Field(
+            default="",
+            description="Required AWS access key to retrieve the model list.",
+        )
+        AWS_SECRET_KEY: str = Field(
+            default="",
+            description="Required AWS secret key to retrieve the model list.",
+        )
+        AWS_REGION_NAME: str = Field(
+            default="us-east-1",
+            description="The AWS region name.",
+        )
+        pass
 
     def __init__(self):
         self.type = "manifold"

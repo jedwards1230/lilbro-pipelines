@@ -2,28 +2,21 @@ from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
 import os
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import requests
 
 
 class Pipeline:
 
     class Valves(BaseModel):
-        OLLAMA_BASE_URL: str
+        OLLAMA_BASE_URL: str = Field(
+            default="",
+            description="The base URL for Ollama API endpoints.",
+        )
+        pass
 
     def __init__(self):
-        # You can also set the pipelines that are available in this pipeline.
-        # Set manifold to True if you want to use this pipeline as a manifold.
-        # Manifold pipelines can have multiple pipelines.
         self.type = "manifold"
-
-        # Optionally, you can set the id and name of the pipeline.
-        # Best practice is to not specify the id so that it can be automatically inferred from the filename, so that users can install multiple versions of the same pipeline.
-        # The identifier must be unique across all pipelines.
-        # The identifier must be an alphanumeric string that can include underscores or hyphens. It cannot contain spaces, special characters, slashes, or backslashes.
-        # self.id = "ollama_manifold"
-
-        # Optionally, you can set the name of the manifold pipeline.
         self.name = "Ollama: "
 
         self.valves = self.Valves(
@@ -76,8 +69,6 @@ class Pipeline:
     def pipe(
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
-        # This is where you can add your custom pipelines like RAG.
-
         if "user" in body:
             print("######################################")
             print(f'# User: {body["user"]["name"]} ({body["user"]["id"]})')
@@ -88,12 +79,12 @@ class Pipeline:
             r = requests.post(
                 url=f"{self.valves.OLLAMA_BASE_URL}/v1/chat/completions",
                 json={**body, "model": model_id},
-                stream=True,
+                stream=body.get("stream", False),
             )
 
             r.raise_for_status()
 
-            if body["stream"]:
+            if body.get("stream", False):
                 return r.iter_lines()
             else:
                 return r.json()

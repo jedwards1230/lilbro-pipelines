@@ -42,6 +42,14 @@ class Pipeline:
             default="",
             description="Required API key to retrieve the model list.",
         )
+        pass
+
+    class UserValves(BaseModel):
+        OPENAI_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
+        pass
 
     def __init__(self):
         self.valves = self.Valves(

@@ -13,7 +13,7 @@ import os
 import requests
 import json
 from typing import List, Union, Generator, Iterator
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import sseclient
 
 from utils.pipelines.main import pop_system_message
@@ -21,11 +21,21 @@ from utils.pipelines.main import pop_system_message
 
 class Pipeline:
     class Valves(BaseModel):
-        ANTHROPIC_API_KEY: str = ""
+        ANTHROPIC_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
+        pass
+
+    class UserValves(BaseModel):
+        ANTHROPIC_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
+        pass
 
     def __init__(self):
         self.type = "manifold"
-        self.id = "anthropic"
         self.name = "Anthropic: "
 
         self.valves = self.Valves(
@@ -33,6 +43,7 @@ class Pipeline:
         )
         self.url = "https://api.anthropic.com/v1/messages"
         self.update_headers()
+        pass
 
     def update_headers(self):
         self.headers = {
@@ -40,6 +51,7 @@ class Pipeline:
             "content-type": "application/json",
             "x-api-key": self.valves.ANTHROPIC_API_KEY,
         }
+        pass
 
     def get_anthropic_models(self):
         return [

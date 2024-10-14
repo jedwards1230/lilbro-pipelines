@@ -19,22 +19,31 @@ from google.generativeai.types import GenerationConfig
 
 
 class Pipeline:
-    """Google GenAI pipeline"""
-
     class Valves(BaseModel):
-        """Options to change from the WebUI"""
+        GOOGLE_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
+        USE_PERMISSIVE_SAFETY: bool = Field(
+            default=False,
+            description="If enabled, the pipeline will allow more permissive safety settings.",
+        )
 
-        GOOGLE_API_KEY: str = ""
-        USE_PERMISSIVE_SAFETY: bool = Field(default=False)
+    class UserValves(BaseModel):
+        GOOGLE_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
 
     def __init__(self):
         self.type = "manifold"
-        self.id = "google_genai"
         self.name = "Google: "
 
         self.valves = self.Valves(
             **{
-                "GOOGLE_API_KEY": os.getenv("GOOGLE_API_KEY", ""),
+                "GOOGLE_API_KEY": os.getenv(
+                    "GOOGLE_API_KEY", "your-google-api-key-here"
+                ),
                 "USE_PERMISSIVE_SAFETY": False,
             }
         )
