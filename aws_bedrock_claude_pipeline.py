@@ -9,6 +9,7 @@ requirements: requests, boto3
 url: https://github.com/open-webui/pipelines/blob/main/examples/pipelines/providers/aws_bedrock_claude_pipeline.py
 environment_variables: AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION_NAME
 """
+
 import base64
 import json
 import logging
@@ -37,23 +38,32 @@ class Pipeline:
 
         self.valves = self.Valves(
             **{
-                "AWS_ACCESS_KEY": os.getenv("AWS_ACCESS_KEY", "your-aws-access-key-here"),
-                "AWS_SECRET_KEY": os.getenv("AWS_SECRET_KEY", "your-aws-secret-key-here"),
-                "AWS_REGION_NAME": os.getenv("AWS_REGION_NAME", "your-aws-region-name-here"),
+                "AWS_ACCESS_KEY": os.getenv(
+                    "AWS_ACCESS_KEY", "your-aws-access-key-here"
+                ),
+                "AWS_SECRET_KEY": os.getenv(
+                    "AWS_SECRET_KEY", "your-aws-secret-key-here"
+                ),
+                "AWS_REGION_NAME": os.getenv(
+                    "AWS_REGION_NAME", "your-aws-region-name-here"
+                ),
             }
         )
 
-        self.bedrock = boto3.client(aws_access_key_id=self.valves.AWS_ACCESS_KEY,
-                                    aws_secret_access_key=self.valves.AWS_SECRET_KEY,
-                                    service_name="bedrock",
-                                    region_name=self.valves.AWS_REGION_NAME)
-        self.bedrock_runtime = boto3.client(aws_access_key_id=self.valves.AWS_ACCESS_KEY,
-                                            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
-                                            service_name="bedrock-runtime",
-                                            region_name=self.valves.AWS_REGION_NAME)
+        self.bedrock = boto3.client(
+            aws_access_key_id=self.valves.AWS_ACCESS_KEY,
+            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
+            service_name="bedrock",
+            region_name=self.valves.AWS_REGION_NAME,
+        )
+        self.bedrock_runtime = boto3.client(
+            aws_access_key_id=self.valves.AWS_ACCESS_KEY,
+            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
+            service_name="bedrock-runtime",
+            region_name=self.valves.AWS_REGION_NAME,
+        )
 
         self.pipelines = self.get_models()
-
 
     async def on_startup(self):
         # This function is called when the server is started.
@@ -68,14 +78,18 @@ class Pipeline:
     async def on_valves_updated(self):
         # This function is called when the valves are updated.
         print(f"on_valves_updated:{__name__}")
-        self.bedrock = boto3.client(aws_access_key_id=self.valves.AWS_ACCESS_KEY,
-                                    aws_secret_access_key=self.valves.AWS_SECRET_KEY,
-                                    service_name="bedrock",
-                                    region_name=self.valves.AWS_REGION_NAME)
-        self.bedrock_runtime = boto3.client(aws_access_key_id=self.valves.AWS_ACCESS_KEY,
-                                            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
-                                            service_name="bedrock-runtime",
-                                            region_name=self.valves.AWS_REGION_NAME)
+        self.bedrock = boto3.client(
+            aws_access_key_id=self.valves.AWS_ACCESS_KEY,
+            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
+            service_name="bedrock",
+            region_name=self.valves.AWS_REGION_NAME,
+        )
+        self.bedrock_runtime = boto3.client(
+            aws_access_key_id=self.valves.AWS_ACCESS_KEY,
+            aws_secret_access_key=self.valves.AWS_SECRET_KEY,
+            service_name="bedrock-runtime",
+            region_name=self.valves.AWS_REGION_NAME,
+        )
         self.pipelines = self.get_models()
 
     def pipelines(self) -> List[dict]:
@@ -84,12 +98,14 @@ class Pipeline:
     def get_models(self):
         if self.valves.AWS_ACCESS_KEY and self.valves.AWS_SECRET_KEY:
             try:
-                response = self.bedrock.list_foundation_models(byInferenceType='ON_DEMAND')
+                response = self.bedrock.list_foundation_models(
+                    byInferenceType="ON_DEMAND"
+                )
                 return [
                     {
                         "id": model["modelId"],
                         "name": model["modelName"],
-                        "stream": model.get("responseStreamingSupported", False)
+                        "stream": model.get("responseStreamingSupported", False),
                     }
                     for model in response["modelSummaries"]
                     if model["modelLifecycle"]["status"] != "LEGACY"
@@ -108,7 +124,7 @@ class Pipeline:
                 {
                     "id": "error",
                     "name": "Could not fetch models from Bedrock, please update the Access/Secret Key in the valves.",
-                    "stream": False
+                    "stream": False,
                 },
             ]
         else:
@@ -135,21 +151,37 @@ class Pipeline:
                             processed_content.append({"text": item["text"]})
                         elif item["type"] == "image_url":
                             if image_count >= 20:
-                                raise ValueError("Maximum of 20 images per API call exceeded")
+                                raise ValueError(
+                                    "Maximum of 20 images per API call exceeded"
+                                )
                             processed_image = self.process_image(item["image_url"])
                             processed_content.append(processed_image)
                             image_count += 1
                 else:
                     processed_content = [{"text": message.get("content", "")}]
 
-                processed_messages.append({"role": message["role"], "content": processed_content})
+                processed_messages.append(
+                    {"role": message["role"], "content": processed_content}
+                )
 
-            payload = {"modelId": model_id,
-                       "messages": processed_messages,
-                       "system": [{'text': system_message if system_message else 'you are an intelligent ai assistant'}],
-                       "inferenceConfig": {"temperature": body.get("temperature", 0.5)},
-                       "additionalModelRequestFields": {"top_k": body.get("top_k", 200), "top_p": body.get("top_p", 0.9)}
-                       }
+            payload = {
+                "modelId": model_id,
+                "messages": processed_messages,
+                "system": [
+                    {
+                        "text": (
+                            system_message
+                            if system_message
+                            else "you are an intelligent ai assistant"
+                        )
+                    }
+                ],
+                "inferenceConfig": {"temperature": body.get("temperature", 0.5)},
+                "additionalModelRequestFields": {
+                    "top_k": body.get("top_k", 200),
+                    "top_p": body.get("top_p", 0.9),
+                },
+            }
             if body.get("stream", False):
                 return self.stream_response(model_id, payload)
             else:
@@ -160,16 +192,18 @@ class Pipeline:
     def process_image(self, image: str):
         img_stream = None
         if image["url"].startswith("data:image"):
-            if ',' in image["url"]:
-                base64_string = image["url"].split(',')[1]
+            if "," in image["url"]:
+                base64_string = image["url"].split(",")[1]
             image_data = base64.b64decode(base64_string)
 
             img_stream = BytesIO(image_data)
         else:
             img_stream = requests.get(image["url"]).content
         return {
-            "image": {"format": "png" if image["url"].endswith(".png") else "jpeg",
-                      "source": {"bytes": img_stream.read()}}
+            "image": {
+                "format": "png" if image["url"].endswith(".png") else "jpeg",
+                "source": {"bytes": img_stream.read()},
+            }
         }
 
     def stream_response(self, model_id: str, payload: dict) -> Generator:
@@ -184,4 +218,4 @@ class Pipeline:
 
     def get_completion(self, model_id: str, payload: dict) -> str:
         response = self.bedrock_runtime.converse(**payload)
-        return response['output']['message']['content'][0]['text']
+        return response["output"]["message"]["content"][0]["text"]

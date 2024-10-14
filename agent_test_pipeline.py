@@ -15,8 +15,10 @@ import os
 from pydantic import BaseModel, Field
 from swarm import Swarm, Agent
 
+
 def transfer_to_agent_b():
     return agent_b
+
 
 agent_a = Agent(
     name="Agent A",
@@ -28,6 +30,7 @@ agent_b = Agent(
     name="Agent B",
     instructions="Only speak in Haikus.",
 )
+
 
 class Pipeline:
     class Valves(BaseModel):
@@ -41,11 +44,13 @@ class Pipeline:
         )
 
     def __init__(self):
-        self.valves = self.Valves(**{
-            "OPENAI_API_KEY": os.getenv(
-                "OPENAI_API_KEY", "your-openai-api-key-here"
-            )
-        })
+        self.valves = self.Valves(
+            **{
+                "OPENAI_API_KEY": os.getenv(
+                    "OPENAI_API_KEY", "your-openai-api-key-here"
+                )
+            }
+        )
         self.client = Swarm()
 
     async def on_startup(self):
@@ -60,9 +65,7 @@ class Pipeline:
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
         response = self.client.run(
-            agent=agent_a,
-            messages=messages,
-            stream=body["stream"]
+            agent=agent_a, messages=messages, stream=body["stream"]
         )
 
         return response.messages[-1]["content"]

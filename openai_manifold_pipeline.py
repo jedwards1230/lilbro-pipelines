@@ -19,24 +19,26 @@ class Pipeline:
             description="Required API key to retrieve the model list.",
         )
         pass
-    
+
     class UserValves(BaseModel):
         OPENAI_API_KEY: str = Field(
             default="",
             description="Required API key to retrieve the model list.",
         )
         pass
-    
+
     def __init__(self):
         self.type = "manifold"
         self.name = "OpenAI: "
-        
-        self.valves = self.Valves(**{
-            "OPENAI_API_KEY": os.getenv(
-                "OPENAI_API_KEY", "your-openai-api-key-here"
-            )
-        })
-        
+
+        self.valves = self.Valves(
+            **{
+                "OPENAI_API_KEY": os.getenv(
+                    "OPENAI_API_KEY", "your-openai-api-key-here"
+                )
+            }
+        )
+
         self.pipelines = self.get_openai_models()
         pass
 
@@ -130,7 +132,7 @@ class Pipeline:
                 url=f"{self.valves.OPENAI_API_BASE_URL}/chat/completions",
                 json=payload,
                 headers=headers,
-                stream=body["stream"]
+                stream=body["stream"],
             )
 
             r.raise_for_status()

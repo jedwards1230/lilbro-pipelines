@@ -32,10 +32,12 @@ class Pipeline:
         self.id = "google_genai"
         self.name = "Google: "
 
-        self.valves = self.Valves(**{
-            "GOOGLE_API_KEY": os.getenv("GOOGLE_API_KEY", ""),
-            "USE_PERMISSIVE_SAFETY": False
-        })
+        self.valves = self.Valves(
+            **{
+                "GOOGLE_API_KEY": os.getenv("GOOGLE_API_KEY", ""),
+                "USE_PERMISSIVE_SAFETY": False,
+            }
+        )
         self.pipelines = []
 
         genai.configure(api_key=self.valves.GOOGLE_API_KEY)
@@ -104,8 +106,10 @@ class Pipeline:
             print(f"Pipe function called for model: {model_id}")
             print(f"Stream mode: {body.get('stream', False)}")
 
-            system_message = next((msg["content"] for msg in messages if msg["role"] == "system"), None)
-            
+            system_message = next(
+                (msg["content"] for msg in messages if msg["role"] == "system"), None
+            )
+
             contents = []
             for message in messages:
                 if message["role"] != "system":
@@ -118,22 +122,41 @@ class Pipeline:
                                 image_url = content["image_url"]["url"]
                                 if image_url.startswith("data:image"):
                                     image_data = image_url.split(",")[1]
-                                    parts.append({"inline_data": {"mime_type": "image/jpeg", "data": image_data}})
+                                    parts.append(
+                                        {
+                                            "inline_data": {
+                                                "mime_type": "image/jpeg",
+                                                "data": image_data,
+                                            }
+                                        }
+                                    )
                                 else:
                                     parts.append({"image_url": image_url})
                         contents.append({"role": message["role"], "parts": parts})
                     else:
-                        contents.append({
-                            "role": "user" if message["role"] == "user" else "model",
-                            "parts": [{"text": message["content"]}]
-                        })
-            
+                        contents.append(
+                            {
+                                "role": (
+                                    "user" if message["role"] == "user" else "model"
+                                ),
+                                "parts": [{"text": message["content"]}],
+                            }
+                        )
+
             if "gemini-1.5" in model_id:
-                model = genai.GenerativeModel(model_name=model_id, system_instruction=system_message)
+                model = genai.GenerativeModel(
+                    model_name=model_id, system_instruction=system_message
+                )
             else:
                 if system_message:
-                    contents.insert(0, {"role": "user", "parts": [{"text": f"System: {system_message}"}]})
-                
+                    contents.insert(
+                        0,
+                        {
+                            "role": "user",
+                            "parts": [{"text": f"System: {system_message}"}],
+                        },
+                    )
+
                 model = genai.GenerativeModel(model_name=model_id)
 
             generation_config = GenerationConfig(
