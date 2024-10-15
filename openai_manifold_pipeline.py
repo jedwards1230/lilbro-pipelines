@@ -126,7 +126,7 @@ class Pipeline:
                 url=f"{self.valves.OPENAI_API_BASE_URL}/chat/completions",
                 json=payload,
                 headers=headers,
-                stream=body.get("stream", True),
+                stream=body.get("stream", False),
             )
 
             r.raise_for_status()

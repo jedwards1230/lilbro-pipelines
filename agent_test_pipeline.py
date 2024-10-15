@@ -9,27 +9,13 @@ requirements: git+https://github.com/openai/swarm.git
 """
 
 from typing import List, Union, Generator, Iterator
-from schemas import OpenAIChatMessage
 import os
+from swarm import Swarm
 
 from pydantic import BaseModel, Field
-from swarm import Swarm, Agent
 
-
-def transfer_to_agent_b():
-    return agent_b
-
-
-agent_a = Agent(
-    name="Agent A",
-    instructions="You are a helpful agent.",
-    functions=[transfer_to_agent_b],
-)
-
-agent_b = Agent(
-    name="Agent B",
-    instructions="Only speak in Haikus.",
-)
+from agents.main import primary_agent
+from agents.plex import init_plex_client
 
 
 class Pipeline:
@@ -42,10 +28,26 @@ class Pipeline:
             default="",
             description="Required API key to retrieve the model list.",
         )
+        PLEX_BASE_URL: str = Field(
+            default="http://localhost:32400",
+            description="The base URL for Plex API endpoints.",
+        )
+        PLEX_TOKEN: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
         pass
 
     class UserValves(BaseModel):
         OPENAI_API_KEY: str = Field(
+            default="",
+            description="Required API key to retrieve the model list.",
+        )
+        PLEX_BASE_URL: str = Field(
+            default="",
+            description="The base URL for Plex API endpoints.",
+        )
+        PLEX_TOKEN: str = Field(
             default="",
             description="Required API key to retrieve the model list.",
         )
@@ -56,10 +58,13 @@ class Pipeline:
             **{
                 "OPENAI_API_KEY": os.getenv(
                     "OPENAI_API_KEY", "your-openai-api-key-here"
-                )
+                ),
+                "PLEX_BASE_URL": os.getenv("PLEX_BASE_URL", "http://localhost:32400"),
+                "PLEX_TOKEN": os.getenv("PLEX_TOKEN", "your-plex-token-here"),
             }
         )
         self.client = Swarm()
+        init_plex_client(self.valves.PLEX_BASE_URL, self.valves.PLEX_TOKEN)
 
     async def on_startup(self):
         print(f"on_startup:{__name__}")
@@ -73,7 +78,7 @@ class Pipeline:
         self, user_message: str, model_id: str, messages: List[dict], body: dict
     ) -> Union[str, Generator, Iterator]:
         response = self.client.run(
-            agent=agent_a, messages=messages, stream=body["stream"]
+            agent=primary_agent, messages=messages, stream=body.get("stream", False)
         )
 
         return response.messages[-1]["content"]
