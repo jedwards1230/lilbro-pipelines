@@ -5,7 +5,7 @@ date: 2024-10-13
 version: 0.0.1
 license: MIT
 description: A pipeline for testing the OpenAI Swarm Agent functionality.
-requirements: git+https://github.com/openai/swarm.git, git+https://github.com/jedwards1230/lilbro-pipelines.git#subdirectory=lib
+requirements: git+https://github.com/openai/swarm.git, git+https://github.com/jedwards1230/lilbro-pipelines.git
 """
 
 from typing import List, Union, Generator, Iterator
