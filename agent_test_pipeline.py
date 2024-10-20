@@ -5,7 +5,7 @@ date: 2024-10-13
 version: 0.0.1
 license: MIT
 description: A pipeline for testing the OpenAI Swarm Agent functionality.
-requirements: git+https://github.com/openai/swarm.git
+requirements: git+https://github.com/openai/swarm.git, git+https://github.com/jedwards1230/lilbro-pipelines.git#subdirectory=lib
 """
 
 from typing import List, Union, Generator, Iterator
@@ -14,8 +14,8 @@ from swarm import Swarm
 
 from pydantic import BaseModel, Field
 
-from agents.main import primary_agent
-from agents.plex import init_plex_client
+from lilbro_pipelines.main import primary_agent
+from lilbro_pipelines.plex import init_plex_client
 
 
 class Pipeline:
