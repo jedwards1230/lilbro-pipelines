@@ -1,2 +1,2 @@
 from .main import *
-from .plex import *
+import plex
