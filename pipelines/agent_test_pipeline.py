@@ -14,8 +14,7 @@ from swarm import Swarm
 
 from pydantic import BaseModel, Field
 
-from pipelines.lilbro_utils import primary_agent
-from pipelines.lilbro_utils.plex import init_plex_client
+from pipelines.lilbro_utils import primary_agent, init_plex_client
 
 
 class Pipeline:
