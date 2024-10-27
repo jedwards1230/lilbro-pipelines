@@ -1,6 +1,6 @@
 from swarm import Agent
 
-from plex import fetch_audiobook_and_author_data
+from .plex import fetch_audiobook_and_author_data
 
 
 def transfer_to_homelab_agent():
