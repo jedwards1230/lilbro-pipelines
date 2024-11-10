@@ -28,7 +28,7 @@ class Pipeline:
             description="Required API key to retrieve the model list.",
         )
         PLEX_BASE_URL: str = Field(
-            default="http://localhost:32400",
+            default="http://host.docker.internal:32400",
             description="The base URL for Plex API endpoints.",
         )
         PLEX_TOKEN: str = Field(
@@ -58,7 +58,9 @@ class Pipeline:
                 "OPENAI_API_KEY": os.getenv(
                     "OPENAI_API_KEY", "your-openai-api-key-here"
                 ),
-                "PLEX_BASE_URL": os.getenv("PLEX_BASE_URL", "http://localhost:32400"),
+                "PLEX_BASE_URL": os.getenv(
+                    "PLEX_BASE_URL", "http://host.docker.internal:32400"
+                ),
                 "PLEX_TOKEN": os.getenv("PLEX_TOKEN", "your-plex-token-here"),
             }
         )
@@ -79,5 +81,7 @@ class Pipeline:
         response = self.client.run(
             agent=primary_agent, messages=messages, stream=body.get("stream", False)
         )
+
+        print(f"response: {response}")
 
         return response.messages[-1]["content"]
