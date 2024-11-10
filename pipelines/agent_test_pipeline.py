@@ -82,6 +82,10 @@ class Pipeline:
             agent=primary_agent, messages=messages, stream=body.get("stream", False)
         )
 
-        print(f"response: {response}")
+        try:
+            print(f"response: {response}")
 
-        return response.messages[-1]["content"]
+            return response.messages[-1]["content"]
+        except Exception as e:
+            print(f"Error: {e}")
+            return "An error occurred: " + str(e)
