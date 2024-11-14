@@ -133,6 +133,9 @@ class Pipeline:
             del payload["chat_id"]
         if "title" in payload:
             del payload["title"]
+        if "max_tokens" in payload:
+            payload["max_completion_tokens"] = payload["max_tokens"]
+            del payload["max_tokens"]
 
         try:
             r = requests.post(
