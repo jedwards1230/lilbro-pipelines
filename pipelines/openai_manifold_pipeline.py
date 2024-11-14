@@ -1,4 +1,14 @@
-# https://github.com/open-webui/pipelines/blob/main/examples/pipelines/providers/openai_manifold_pipeline.py
+"""
+title: Openai Manifold Pipeline
+author: 
+date: 2024-08-18 (2024-09-30)
+version: 1.0-jedwards1230
+license: MIT
+description: A pipeline for generating text and processing images using the OpenAI API.
+requirements: requests, boto3, openai
+url: https://github.com/open-webui/pipelines/blob/main/examples/pipelines/providers/openai_manifold_pipeline.py
+environment_variables: OPENAI_API_KEY, OPENAI_API_BASE_URL
+"""
 
 from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
@@ -35,7 +45,10 @@ class Pipeline:
             **{
                 "OPENAI_API_KEY": os.getenv(
                     "OPENAI_API_KEY", "your-openai-api-key-here"
-                )
+                ),
+                "OPENAI_API_BASE_URL": os.getenv(
+                    "OPENAI_API_BASE_URL", "https://api.openai.com/v1"
+                ),
             }
         )
 
@@ -136,4 +149,4 @@ class Pipeline:
             else:
                 return r.json()
         except Exception as e:
-            return f"Error: {e}"
+            return f"Error: {e}\nPayload: {payload}"
