@@ -58,7 +58,7 @@ class Pipe:
 
         # Model Configuration (Renamed from model_ids to reasoning_model_ids)
         reasoning_model_ids: str = Field(
-            default="marco-o1:latest",
+            default="openai_manifold_pipeline.o1-preview",
             description="Comma-separated list of model IDs (not names) to be used by the manifold.",
         )
         manifold_prefix: str = Field(
@@ -281,10 +281,12 @@ class Pipe:
             for model_id in self.valves.reasoning_model_ids.split(",")
             if model_id.strip()
         ]
+        self.log_debug(f"Found model ids: {reasoning_model_ids}")
         return [{"id": model_id, "name": model_id} for model_id in reasoning_model_ids]
 
     def pipes(self) -> List[dict]:
         """Return the list of model pipes."""
+        self.log_debug(f"Getting pipes")
         return self.get_models()
 
     def get_summary_model_id(self) -> str:
@@ -341,6 +343,11 @@ class Pipe:
         self.reset_state()
 
         try:
+            # Ensure body is a dictionary
+            self.log_debug(f"Checking request body")
+            if not isinstance(body, dict):
+                raise ValueError("Expected body to be a dictionary")
+
             # Extract model ID and clean prefix by stripping up to the first dot
             model_id = body.get("model", "")
             self.log_debug(f"Original model_id: {model_id}")
@@ -365,6 +372,9 @@ class Pipe:
 
             # Handle system messages if present (assumes system messages are separated)
             body_messages = body.get("messages", [])
+            if not isinstance(body_messages, list):
+                raise ValueError("Expected messages to be a list")
+
             system_message, messages = pop_system_message(body_messages)
 
             # Append system prompt to user messages if the valve is enabled
