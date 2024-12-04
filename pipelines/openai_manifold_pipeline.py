@@ -162,5 +162,7 @@ class Pipeline:
             else:
                 return r.json()
         except Exception as e:
-            print(f"Error: {e}")
+            print(
+                f"Error: {e}\nHeaders: {headers}\nPayload: {payload}\nResponse: {r.text}"
+            )
             return f"Error processing response: {e}"
