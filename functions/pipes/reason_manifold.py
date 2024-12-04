@@ -344,7 +344,7 @@ class Pipe:
 
         try:
             # Ensure body is a dictionary
-            self.log_debug(f"Checking request body")
+            self.log_debug(f"Checking request body: {body}")
             if not isinstance(body, dict):
                 raise ValueError("Expected body to be a dictionary")
 

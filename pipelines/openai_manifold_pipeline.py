@@ -125,7 +125,17 @@ class Pipeline:
                     + "\n=====End====="
                 )
 
-        payload = {**body, "model": model_id, "messages": messages}
+        payload = {
+            **body,
+            "chat_id": body.get("chat_id", None),
+            "id": body.get("id", None),
+            "model": model_id,
+            "messages": messages,
+            "session_id": body.get("session_id", None),
+            "stream": body.get("stream", False),
+            "stream_options": body.get("stream_options", {"include_usage": False}),
+            "tool_ids": body.get("tool_ids", []),
+        }
 
         if "user" in payload:
             del payload["user"]

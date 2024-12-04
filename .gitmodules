@@ -1,0 +1,4 @@
+[submodule ".modules/safe-code-execution"]
+	path = .modules/safe-code-execution
+	url = https://github.com/EtiennePerot/safe-code-execution
+	shallow = true
