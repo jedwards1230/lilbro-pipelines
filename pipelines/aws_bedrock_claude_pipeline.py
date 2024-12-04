@@ -11,17 +11,16 @@ environment_variables: AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION_NAME
 """
 
 import base64
+import boto3
 import json
 import logging
-from io import BytesIO
-from typing import List, Union, Generator, Iterator
-
-import boto3
-
-from pydantic import BaseModel, Field
-
 import os
 import requests
+
+from io import BytesIO
+from typing import List, Union, Generator, Iterator
+from pydantic import BaseModel, Field
+
 
 from utils.pipelines.main import pop_system_message
 

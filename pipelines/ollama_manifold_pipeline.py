@@ -1,9 +1,9 @@
-from typing import List, Union, Generator, Iterator
-from schemas import OpenAIChatMessage
 import os
+import requests
 
 from pydantic import BaseModel, Field
-import requests
+from typing import List, Union, Generator, Iterator
+from schemas import OpenAIChatMessage
 
 
 class Pipeline:

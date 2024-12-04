@@ -15,9 +15,8 @@ from typing import Optional
 from fastapi.requests import Request
 
 from open_webui.apps.webui.models.users import Users
-
-from open_webui.main import webui_app
 from open_webui.apps.webui.routers.memories import add_memory, AddMemoryForm
+from open_webui.main import webui_app
 
 
 class Action:

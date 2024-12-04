@@ -1,9 +1,9 @@
 """A manifold to integrate OpenAI's ImageGen models into Open-WebUI"""
 
-from typing import List, Union, Generator, Iterator
 import os
 
 from pydantic import BaseModel, Field
+from typing import List, Union, Generator, Iterator
 
 from openai import OpenAI
 

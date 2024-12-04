@@ -10,12 +10,12 @@ url: https://github.com/open-webui/pipelines/blob/main/examples/pipelines/provid
 environment_variables: OPENAI_API_KEY, OPENAI_API_BASE_URL
 """
 
+import os
+import requests
+
 from typing import List, Union, Generator, Iterator
 from schemas import OpenAIChatMessage
 from pydantic import BaseModel, Field
-
-import os
-import requests
 
 
 class Pipeline:

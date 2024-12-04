@@ -21,16 +21,16 @@ from typing import List, Union, Optional, Callable, Awaitable, Dict, Any
 from pydantic import BaseModel, Field
 from open_webui.utils.misc import pop_system_message, add_or_update_system_message
 from starlette.responses import StreamingResponse
+import logging
+import inspect  # For inspecting function signatures
+import re  # For regex operations
+
 from open_webui.main import (
     generate_chat_completions,
     get_task_model_id,
 )
 from open_webui.utils.misc import get_last_assistant_message, get_content_from_message
 from open_webui.config import TASK_MODEL, TASK_MODEL_EXTERNAL
-
-import logging
-import inspect  # For inspecting function signatures
-import re  # For regex operations
 
 
 # Mock the user object as expected by the function (OWUI 0.4.x constraint)

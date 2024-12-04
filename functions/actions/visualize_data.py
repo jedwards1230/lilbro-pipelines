@@ -11,11 +11,12 @@ version: 0.0.2
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 import os
-from open_webui.apps.webui.models.files import Files
 import uuid
 import logging
 from openai import OpenAI
 import time
+
+from open_webui.apps.webui.models.files import Files
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)

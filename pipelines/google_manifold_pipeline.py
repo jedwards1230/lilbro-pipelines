@@ -9,9 +9,9 @@ requirements: google-generativeai
 environment_variables: GOOGLE_API_KEY
 """
 
-from typing import List, Union, Iterator
 import os
 
+from typing import List, Union, Iterator
 from pydantic import BaseModel, Field
 
 import google.generativeai as genai

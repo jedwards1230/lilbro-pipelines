@@ -8,10 +8,10 @@ description: A pipeline for testing the OpenAI Swarm Agent functionality.
 requirements: git+https://github.com/openai/swarm.git
 """
 
-from typing import List, Union, Generator, Iterator
 import os
-from swarm import Swarm
 
+from typing import List, Union, Generator, Iterator
+from swarm import Swarm
 from pydantic import BaseModel, Field
 
 from pipelines.lilbro_utils import primary_agent, init_plex_client
