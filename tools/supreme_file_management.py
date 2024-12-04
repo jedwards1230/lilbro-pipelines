@@ -26,13 +26,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Tools:
     class Valves(BaseModel):
+        base_path: str = Field(default=os.getcwd())
         status: bool = Field(default=False)
         debug: bool = Field(default=False)
         pass
 
-    def __init__(self, base_path=None):
+    def __init__(self):
         self.valves = self.Valves()
-        self.base_path = base_path if base_path else os.getcwd()
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(self.valves.debug and logging.DEBUG or logging.INFO)
 
@@ -43,7 +43,7 @@ class Tools:
         :param path: The path where the folder should be created.
         :return: A success message if the folder is created successfully.
         """
-        folder_path = os.path.join(path if path else self.base_path, folder_name)
+        folder_path = os.path.join(path if path else self.valves.base_path, folder_name)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
             self.logger.info(
@@ -63,7 +63,7 @@ class Tools:
         :param path: The path where the folder is located.
         :return: A success message if the folder is deleted successfully.
         """
-        folder_path = os.path.join(path if path else self.base_path, folder_name)
+        folder_path = os.path.join(path if path else self.valves.base_path, folder_name)
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
             self.logger.info(
@@ -84,7 +84,7 @@ class Tools:
         :param path: The path where the file should be created.
         :return: A success message if the file is created successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         with open(file_path, "w") as file:
             file.write(content)
         self.logger.info(f"File '{file_name}' created successfully at {file_path}!")
@@ -97,7 +97,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is deleted successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             os.remove(file_path)
             self.logger.info(
@@ -115,7 +115,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: The content of the file.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 content = file.read()
@@ -133,7 +133,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the content is written successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         with open(file_path, "w") as file:
             file.write(content)
         self.logger.info(
@@ -147,10 +147,20 @@ class Tools:
         :param path: The path where the files should be listed.
         :return: A list of files in the specified directory.
         """
-        directory_path = path if path else self.base_path
-        files = os.listdir(directory_path)
+        directory_path = path if path else self.valves.base_path
+        items = os.listdir(directory_path)
+        files_and_dirs = []
+        for item in items:
+            if os.path.isdir(os.path.join(directory_path, item)):
+                files_and_dirs.append(f"{item}/")  # Add a slash to indicate a directory
+            else:
+                files_and_dirs.append(item)
+
+        # Sort directories first, then files, both alphabetically
+        files_and_dirs.sort(key=lambda x: (not x.endswith("/"), x.lower()))
+
         self.logger.info(f"Files listed successfully from {directory_path}!")
-        return "Files in the specified directory:\n" + "\n".join(files)
+        return "Files in the specified directory:\n" + "\n".join(files_and_dirs)
 
     def read_json_file(self, file_name: str, path: str = None) -> dict:
         """
@@ -159,7 +169,7 @@ class Tools:
         :param path: The path where the JSON file is located.
         :return: The content of the JSON file as a dictionary.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 content = json.load(file)
@@ -181,7 +191,7 @@ class Tools:
         :param path: The path where the JSON file should be created.
         :return: A success message if the content is written successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         with open(file_path, "w") as file:
             json.dump(content, file, indent=4)
         self.logger.info(
@@ -200,9 +210,11 @@ class Tools:
         :param dest_path: The path where the destination file should be created.
         :return: A success message if the file is copied successfully.
         """
-        src_file_path = os.path.join(src_path if src_path else self.base_path, src_file)
+        src_file_path = os.path.join(
+            src_path if src_path else self.valves.base_path, src_file
+        )
         dest_file_path = os.path.join(
-            dest_path if dest_path else self.base_path, dest_file
+            dest_path if dest_path else self.valves.base_path, dest_file
         )
         if os.path.exists(src_file_path):
             shutil.copy2(src_file_path, dest_file_path)
@@ -230,10 +242,10 @@ class Tools:
         :return: A success message if the folder is copied successfully.
         """
         src_folder_path = os.path.join(
-            src_path if src_path else self.base_path, src_folder
+            src_path if src_path else self.valves.base_path, src_folder
         )
         dest_folder_path = os.path.join(
-            dest_path if dest_path else self.base_path, dest_folder
+            dest_path if dest_path else self.valves.base_path, dest_folder
         )
         if os.path.exists(src_folder_path):
             shutil.copytree(src_folder_path, dest_folder_path)
@@ -258,9 +270,11 @@ class Tools:
         :param dest_path: The path where the destination file should be created.
         :return: A success message if the file is moved successfully.
         """
-        src_file_path = os.path.join(src_path if src_path else self.base_path, src_file)
+        src_file_path = os.path.join(
+            src_path if src_path else self.valves.base_path, src_file
+        )
         dest_file_path = os.path.join(
-            dest_path if dest_path else self.base_path, dest_file
+            dest_path if dest_path else self.valves.base_path, dest_file
         )
         if os.path.exists(src_file_path):
             shutil.move(src_file_path, dest_file_path)
@@ -288,10 +302,10 @@ class Tools:
         :return: A success message if the folder is moved successfully.
         """
         src_folder_path = os.path.join(
-            src_path if src_path else self.base_path, src_folder
+            src_path if src_path else self.valves.base_path, src_folder
         )
         dest_folder_path = os.path.join(
-            dest_path if dest_path else self.base_path, dest_folder
+            dest_path if dest_path else self.valves.base_path, dest_folder
         )
         if os.path.exists(src_folder_path):
             shutil.move(src_folder_path, dest_folder_path)
@@ -329,7 +343,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is encrypted successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
                 data = file.read()
@@ -355,7 +369,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is decrypted successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
                 data = file.read()
@@ -380,7 +394,8 @@ class Tools:
         :param path: The path where the file is located.
         :return: A dictionary containing the file's metadata.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
+        self.logger.debug(f"File path: {file_path}")
         if os.path.exists(file_path):
             metadata = os.stat(file_path)
             return {
@@ -409,7 +424,7 @@ class Tools:
         :param new_pattern: The new pattern to replace the old pattern with.
         :return: A success message if the files are renamed successfully.
         """
-        directory_path = os.path.join(self.base_path, directory)
+        directory_path = os.path.join(self.valves.base_path, directory)
         if os.path.exists(directory_path):
             for filename in os.listdir(directory_path):
                 if old_pattern in filename:
@@ -441,8 +456,10 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is compressed successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
-        output_path = os.path.join(path if path else self.base_path, output_filename)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
+        output_path = os.path.join(
+            path if path else self.valves.base_path, output_filename
+        )
         if os.path.exists(file_path):
             if format == "zip":
                 with zipfile.ZipFile(output_path, "w") as zipf:
@@ -474,8 +491,10 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is decompressed successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
-        output_path = os.path.join(path if path else self.base_path, output_directory)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
+        output_path = os.path.join(
+            path if path else self.valves.base_path, output_directory
+        )
         if os.path.exists(file_path):
             if file_name.endswith(".zip"):
                 with zipfile.ZipFile(file_path, "r") as zipf:
@@ -509,10 +528,10 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the version is saved successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             version_path = os.path.join(
-                path if path else self.base_path,
+                path if path else self.valves.base_path,
                 f"{file_name}_v{len(self.versions[file_name]) + 1}",
             )
             shutil.copy2(file_path, version_path)
@@ -533,7 +552,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is restored successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             if 1 <= version <= len(self.versions[file_name]):
                 version_path = self.versions[file_name][version - 1]
@@ -562,7 +581,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is shared successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             # Implement sharing logic here (e.g., store sharing information in a database or file)
             self.logger.info(
@@ -580,7 +599,7 @@ class Tools:
         :param path: The path where to search for files.
         :return: A list of file paths that match the search criteria.
         """
-        search_path = path if path else self.base_path
+        search_path = path if path else self.valves.base_path
         matching_files = []
         for root, dirs, files in os.walk(search_path):
             for file in files:
@@ -634,7 +653,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the tag is added successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             self.tags[file_name].append(tag)
             self.logger.info(f"Tag '{tag}' added to file '{file_name}'!")
@@ -650,7 +669,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A list of tags for the file.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             self.logger.info(f"Tags retrieved for file '{file_name}'!")
             return self.tags[file_name]
@@ -666,7 +685,7 @@ class Tools:
         :param path: The path where the file is located.
         :return: A success message if the file is converted successfully.
         """
-        file_path = os.path.join(path if path else self.base_path, file_name)
+        file_path = os.path.join(path if path else self.valves.base_path, file_name)
         if os.path.exists(file_path):
             # Implement file conversion logic here
             # For example, converting a text file to a PDF
