@@ -128,6 +128,7 @@ class Pipeline:
         #     "id": body.get("id", None),
         #     "session_id": body.get("session_id", None),
         #     "tool_ids": body.get("tool_ids", []),
+        #     "stream_options": body.get("stream_options", {"include_usage": False}),
         # }
 
         payload = {
@@ -136,7 +137,6 @@ class Pipeline:
             "model": model_id,
             "messages": messages,
             "stream": body.get("stream", False),
-            "stream_options": body.get("stream_options", {"include_usage": False}),
         }
 
         if "user" in payload:
