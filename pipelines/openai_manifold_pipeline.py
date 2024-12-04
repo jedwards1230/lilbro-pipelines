@@ -163,4 +163,4 @@ class Pipeline:
                 return r.json()
         except Exception as e:
             print(f"Error: {e}")
-            return f"Error: {e}\nPayload: {payload}"
+            return f"Error processing response: {e}"

@@ -19,12 +19,22 @@ import tarfile
 
 from collections import defaultdict
 
+from pydantic import BaseModel, Field
+
 logging.basicConfig(level=logging.DEBUG)
 
 
 class Tools:
+    class Valves(BaseModel):
+        status: bool = Field(default=False)
+        debug: bool = Field(default=False)
+        pass
+
     def __init__(self, base_path=None):
+        self.valves = self.Valves()
         self.base_path = base_path if base_path else os.getcwd()
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(self.valves.debug and logging.DEBUG or logging.INFO)
 
     def create_folder(self, folder_name: str, path: str = None) -> str:
         """
@@ -36,12 +46,14 @@ class Tools:
         folder_path = os.path.join(path if path else self.base_path, folder_name)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-            logging.info(
+            self.logger.info(
                 f"Folder '{folder_name}' created successfully at {folder_path}!"
             )
             return f"Folder '{folder_name}' created successfully!"
         else:
-            logging.warning(f"Folder '{folder_name}' already exists at {folder_path}.")
+            self.logger.warning(
+                f"Folder '{folder_name}' already exists at {folder_path}."
+            )
             return f"Folder '{folder_name}' already exists."
 
     def delete_folder(self, folder_name: str, path: str = None) -> str:
@@ -54,12 +66,14 @@ class Tools:
         folder_path = os.path.join(path if path else self.base_path, folder_name)
         if os.path.exists(folder_path):
             shutil.rmtree(folder_path)
-            logging.info(
+            self.logger.info(
                 f"Folder '{folder_name}' deleted successfully from {folder_path}!"
             )
             return f"Folder '{folder_name}' deleted successfully!"
         else:
-            logging.warning(f"Folder '{folder_name}' does not exist at {folder_path}.")
+            self.logger.warning(
+                f"Folder '{folder_name}' does not exist at {folder_path}."
+            )
             return f"Folder '{folder_name}' does not exist."
 
     def create_file(self, file_name: str, content: str = "", path: str = None) -> str:
@@ -73,7 +87,7 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         with open(file_path, "w") as file:
             file.write(content)
-        logging.info(f"File '{file_name}' created successfully at {file_path}!")
+        self.logger.info(f"File '{file_name}' created successfully at {file_path}!")
         return f"File '{file_name}' created successfully!"
 
     def delete_file(self, file_name: str, path: str = None) -> str:
@@ -86,10 +100,12 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         if os.path.exists(file_path):
             os.remove(file_path)
-            logging.info(f"File '{file_name}' deleted successfully from {file_path}!")
+            self.logger.info(
+                f"File '{file_name}' deleted successfully from {file_path}!"
+            )
             return f"File '{file_name}' deleted successfully!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def read_file(self, file_name: str, path: str = None) -> str:
@@ -103,10 +119,10 @@ class Tools:
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 content = file.read()
-            logging.info(f"File '{file_name}' read successfully from {file_path}!")
+            self.logger.info(f"File '{file_name}' read successfully from {file_path}!")
             return content
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def write_to_file(self, file_name: str, content: str, path: str = None) -> str:
@@ -120,7 +136,7 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         with open(file_path, "w") as file:
             file.write(content)
-        logging.info(
+        self.logger.info(
             f"Content written to file '{file_name}' successfully at {file_path}!"
         )
         return f"Content written to file '{file_name}' successfully!"
@@ -133,7 +149,7 @@ class Tools:
         """
         directory_path = path if path else self.base_path
         files = os.listdir(directory_path)
-        logging.info(f"Files listed successfully from {directory_path}!")
+        self.logger.info(f"Files listed successfully from {directory_path}!")
         return "Files in the specified directory:\n" + "\n".join(files)
 
     def read_json_file(self, file_name: str, path: str = None) -> dict:
@@ -147,10 +163,14 @@ class Tools:
         if os.path.exists(file_path):
             with open(file_path, "r") as file:
                 content = json.load(file)
-            logging.info(f"JSON file '{file_name}' read successfully from {file_path}!")
+            self.logger.info(
+                f"JSON file '{file_name}' read successfully from {file_path}!"
+            )
             return content
         else:
-            logging.warning(f"JSON file '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(
+                f"JSON file '{file_name}' does not exist at {file_path}."
+            )
             return f"JSON file '{file_name}' does not exist."
 
     def write_json_file(self, file_name: str, content: dict, path: str = None) -> str:
@@ -164,7 +184,7 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         with open(file_path, "w") as file:
             json.dump(content, file, indent=4)
-        logging.info(
+        self.logger.info(
             f"Content written to JSON file '{file_name}' successfully at {file_path}!"
         )
         return f"Content written to JSON file '{file_name}' successfully!"
@@ -186,10 +206,12 @@ class Tools:
         )
         if os.path.exists(src_file_path):
             shutil.copy2(src_file_path, dest_file_path)
-            logging.info(f"File '{src_file}' copied successfully to {dest_file_path}!")
+            self.logger.info(
+                f"File '{src_file}' copied successfully to {dest_file_path}!"
+            )
             return f"File '{src_file}' copied successfully to {dest_file}!"
         else:
-            logging.warning(f"File '{src_file}' does not exist at {src_file_path}.")
+            self.logger.warning(f"File '{src_file}' does not exist at {src_file_path}.")
             return f"File '{src_file}' does not exist."
 
     def copy_folder(
@@ -215,12 +237,12 @@ class Tools:
         )
         if os.path.exists(src_folder_path):
             shutil.copytree(src_folder_path, dest_folder_path)
-            logging.info(
+            self.logger.info(
                 f"Folder '{src_folder}' copied successfully to {dest_folder_path}!"
             )
             return f"Folder '{src_folder}' copied successfully to {dest_folder}!"
         else:
-            logging.warning(
+            self.logger.warning(
                 f"Folder '{src_folder}' does not exist at {src_folder_path}."
             )
             return f"Folder '{src_folder}' does not exist."
@@ -242,10 +264,12 @@ class Tools:
         )
         if os.path.exists(src_file_path):
             shutil.move(src_file_path, dest_file_path)
-            logging.info(f"File '{src_file}' moved successfully to {dest_file_path}!")
+            self.logger.info(
+                f"File '{src_file}' moved successfully to {dest_file_path}!"
+            )
             return f"File '{src_file}' moved successfully to {dest_file}!"
         else:
-            logging.warning(f"File '{src_file}' does not exist at {src_file_path}.")
+            self.logger.warning(f"File '{src_file}' does not exist at {src_file_path}.")
             return f"File '{src_file}' does not exist."
 
     def move_folder(
@@ -271,12 +295,12 @@ class Tools:
         )
         if os.path.exists(src_folder_path):
             shutil.move(src_folder_path, dest_folder_path)
-            logging.info(
+            self.logger.info(
                 f"Folder '{src_folder}' moved successfully to {dest_folder_path}!"
             )
             return f"Folder '{src_folder}' moved successfully to {dest_folder}!"
         else:
-            logging.warning(
+            self.logger.warning(
                 f"Folder '{src_folder}' does not exist at {src_folder_path}."
             )
             return f"Folder '{src_folder}' does not exist."
@@ -315,10 +339,12 @@ class Tools:
             )
             with open(file_path, "wb") as file:
                 file.write(encrypted_data)
-            logging.info(f"File '{file_name}' encrypted successfully at {file_path}!")
+            self.logger.info(
+                f"File '{file_name}' encrypted successfully at {file_path}!"
+            )
             return f"File '{file_name}' encrypted successfully!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def decrypt_file(self, file_name: str, key: str, path: str = None) -> str:
@@ -339,10 +365,12 @@ class Tools:
             )
             with open(file_path, "wb") as file:
                 file.write(decrypted_data)
-            logging.info(f"File '{file_name}' decrypted successfully at {file_path}!")
+            self.logger.info(
+                f"File '{file_name}' decrypted successfully at {file_path}!"
+            )
             return f"File '{file_name}' decrypted successfully!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def get_file_metadata(self, file_name: str, path: str = None) -> dict:
@@ -368,7 +396,7 @@ class Tools:
                 ).strftime("%Y-%m-%d %H:%M:%S"),
             }
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def batch_rename_files(
@@ -390,10 +418,10 @@ class Tools:
                         os.path.join(directory_path, filename),
                         os.path.join(directory_path, new_filename),
                     )
-            logging.info(f"Files in directory '{directory}' renamed successfully!")
+            self.logger.info(f"Files in directory '{directory}' renamed successfully!")
             return f"Files in directory '{directory}' renamed successfully!"
         else:
-            logging.warning(
+            self.logger.warning(
                 f"Directory '{directory}' does not exist at {directory_path}."
             )
             return f"Directory '{directory}' does not exist."
@@ -426,14 +454,14 @@ class Tools:
                 with tarfile.open(output_path, "w:gz") as tarf:
                     tarf.add(file_path, os.path.basename(file_path))
             else:
-                logging.warning(f"Unsupported compression format: {format}.")
+                self.logger.warning(f"Unsupported compression format: {format}.")
                 return f"Unsupported compression format: {format}."
-            logging.info(
+            self.logger.info(
                 f"File '{file_name}' compressed successfully to {output_path}!"
             )
             return f"File '{file_name}' compressed successfully to {output_filename}!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def decompress_file(
@@ -460,18 +488,18 @@ class Tools:
                 with tarfile.open(file_path, "r") as tarf:
                     tarf.extractall(output_path)
             else:
-                logging.warning(
+                self.logger.warning(
                     f"Unsupported decompression format for file: {file_name}."
                 )
                 return f"Unsupported decompression format for file: {file_name}."
-            logging.info(
+            self.logger.info(
                 f"File '{file_name}' decompressed successfully to {output_path}!"
             )
             return (
                 f"File '{file_name}' decompressed successfully to {output_directory}!"
             )
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def save_file_version(self, file_name: str, path: str = None) -> str:
@@ -489,10 +517,10 @@ class Tools:
             )
             shutil.copy2(file_path, version_path)
             self.versions[file_name].append(version_path)
-            logging.info(f"Version saved for file '{file_name}' at {version_path}!")
+            self.logger.info(f"Version saved for file '{file_name}' at {version_path}!")
             return f"Version saved for file '{file_name}'!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def restore_file_version(
@@ -510,17 +538,17 @@ class Tools:
             if 1 <= version <= len(self.versions[file_name]):
                 version_path = self.versions[file_name][version - 1]
                 shutil.copy2(version_path, file_path)
-                logging.info(
+                self.logger.info(
                     f"File '{file_name}' restored to version {version} at {file_path}!"
                 )
                 return f"File '{file_name}' restored to version {version}!"
             else:
-                logging.warning(
+                self.logger.warning(
                     f"Version {version} does not exist for file '{file_name}'."
                 )
                 return f"Version {version} does not exist for file '{file_name}'."
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def share_file(
@@ -537,12 +565,12 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         if os.path.exists(file_path):
             # Implement sharing logic here (e.g., store sharing information in a database or file)
-            logging.info(
+            self.logger.info(
                 f"File '{file_name}' shared with user '{user}' with permissions '{permissions}'!"
             )
             return f"File '{file_name}' shared with user '{user}' with permissions '{permissions}'!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def search_files(self, keyword: str, path: str = None) -> list:
@@ -563,7 +591,7 @@ class Tools:
                     with open(file_path, "r") as f:
                         if keyword in f.read():
                             matching_files.append(file_path)
-        logging.info(
+        self.logger.info(
             f"Search for keyword '{keyword}' completed with {len(matching_files)} matches!"
         )
         return matching_files
@@ -590,12 +618,12 @@ class Tools:
                         > 1
                     ):
                         shutil.copy2(source_file_path, destination_file_path)
-            logging.info(
+            self.logger.info(
                 f"Synchronization from '{source_path}' to '{destination_path}' completed successfully!"
             )
             return f"Synchronization from '{source_path}' to '{destination_path}' completed successfully!"
         else:
-            logging.warning(f"Source or destination path does not exist.")
+            self.logger.warning(f"Source or destination path does not exist.")
             return f"Source or destination path does not exist."
 
     def add_tag(self, file_name: str, tag: str, path: str = None) -> str:
@@ -609,10 +637,10 @@ class Tools:
         file_path = os.path.join(path if path else self.base_path, file_name)
         if os.path.exists(file_path):
             self.tags[file_name].append(tag)
-            logging.info(f"Tag '{tag}' added to file '{file_name}'!")
+            self.logger.info(f"Tag '{tag}' added to file '{file_name}'!")
             return f"Tag '{tag}' added to file '{file_name}'!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def get_tags(self, file_name: str, path: str = None) -> list:
@@ -624,10 +652,10 @@ class Tools:
         """
         file_path = os.path.join(path if path else self.base_path, file_name)
         if os.path.exists(file_path):
-            logging.info(f"Tags retrieved for file '{file_name}'!")
+            self.logger.info(f"Tags retrieved for file '{file_name}'!")
             return self.tags[file_name]
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def convert_file(self, file_name: str, output_format: str, path: str = None) -> str:
@@ -642,10 +670,10 @@ class Tools:
         if os.path.exists(file_path):
             # Implement file conversion logic here
             # For example, converting a text file to a PDF
-            logging.info(f"File '{file_name}' converted to {output_format} format!")
+            self.logger.info(f"File '{file_name}' converted to {output_format} format!")
             return f"File '{file_name}' converted to {output_format} format!"
         else:
-            logging.warning(f"File '{file_name}' does not exist at {file_path}.")
+            self.logger.warning(f"File '{file_name}' does not exist at {file_path}.")
             return f"File '{file_name}' does not exist."
 
     def backup_files(self, source_path: str, backup_path: str) -> str:
@@ -664,12 +692,12 @@ class Tools:
                     if not os.path.exists(os.path.dirname(backup_file_path)):
                         os.makedirs(os.path.dirname(backup_file_path))
                     shutil.copy2(source_file_path, backup_file_path)
-            logging.info(
+            self.logger.info(
                 f"Backup from '{source_path}' to '{backup_path}' completed successfully!"
             )
             return f"Backup from '{source_path}' to '{backup_path}' completed successfully!"
         else:
-            logging.warning(f"Source or backup path does not exist.")
+            self.logger.warning(f"Source or backup path does not exist.")
             return f"Source or backup path does not exist."
 
     def recover_files(self, backup_path: str, destination_path: str) -> str:
@@ -690,10 +718,10 @@ class Tools:
                     if not os.path.exists(os.path.dirname(destination_file_path)):
                         os.makedirs(os.path.dirname(destination_file_path))
                     shutil.copy2(backup_file_path, destination_file_path)
-            logging.info(
+            self.logger.info(
                 f"Recovery from '{backup_path}' to '{destination_path}' completed successfully!"
             )
             return f"Recovery from '{backup_path}' to '{destination_path}' completed successfully!"
         else:
-            logging.warning(f"Backup or destination path does not exist.")
+            self.logger.warning(f"Backup or destination path does not exist.")
             return f"Backup or destination path does not exist."
