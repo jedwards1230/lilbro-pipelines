@@ -5,8 +5,9 @@ date: 2024-06-15
 version: 1.0
 license: MIT
 description: A pipeline for controlling Home Assistant entities based on their easy names. Only supports lights at the moment.
-requirements: pytz, difflib
+requirements: pytz
 """
+
 import requests
 from typing import Literal, Dict, Any
 from datetime import datetime
@@ -14,6 +15,7 @@ import pytz
 from difflib import get_close_matches
 
 from blueprints.function_calling_blueprint import Pipeline as FunctionCallingBlueprint
+
 
 class Pipeline(FunctionCallingBlueprint):
     class Valves(FunctionCallingBlueprint.Valves):
@@ -30,8 +32,12 @@ class Pipeline(FunctionCallingBlueprint):
 
             :return: The current time in EST.
             """
-            now_est = datetime.now(pytz.timezone('US/Eastern'))  # Get the current time in EST
-            current_time = now_est.strftime("%I:%M %p")  # %I for 12-hour clock, %M for minutes, %p for am/pm
+            now_est = datetime.now(
+                pytz.timezone("US/Eastern")
+            )  # Get the current time in EST
+            current_time = now_est.strftime(
+                "%I:%M %p"
+            )  # %I for 12-hour clock, %M for minutes, %p for am/pm
             return f"ONLY RESPOND 'Current time is {current_time}'"
 
         def get_all_lights(self) -> Dict[str, Any]:
@@ -42,8 +48,13 @@ class Pipeline(FunctionCallingBlueprint):
 
             :return: A dictionary of light entity names and their IDs.
             """
-            if not self.pipeline.valves.HOME_ASSISTANT_URL or not self.pipeline.valves.HOME_ASSISTANT_TOKEN:
-                return {"error": "Home Assistant URL or token not set, ask the user to set it up."}
+            if (
+                not self.pipeline.valves.HOME_ASSISTANT_URL
+                or not self.pipeline.valves.HOME_ASSISTANT_TOKEN
+            ):
+                return {
+                    "error": "Home Assistant URL or token not set, ask the user to set it up."
+                }
             else:
                 url = f"{self.pipeline.valves.HOME_ASSISTANT_URL}/api/states"
                 headers = {
@@ -55,12 +66,15 @@ class Pipeline(FunctionCallingBlueprint):
                 response.raise_for_status()  # Raises an HTTPError for bad responses
                 data = response.json()
 
-                lights = {entity["attributes"]["friendly_name"]: entity["entity_id"]
-                          for entity in data if entity["entity_id"].startswith("light.")}
+                lights = {
+                    entity["attributes"]["friendly_name"]: entity["entity_id"]
+                    for entity in data
+                    if entity["entity_id"].startswith("light.")
+                }
 
                 return lights
 
-        def control_light(self, name: str, state: Literal['on', 'off']) -> str:
+        def control_light(self, name: str, state: Literal["on", "off"]) -> str:
             """
             Turn a light on or off based on its name.
 
@@ -68,7 +82,10 @@ class Pipeline(FunctionCallingBlueprint):
             :param state: The desired state ('on' or 'off').
             :return: The result of the operation.
             """
-            if not self.pipeline.valves.HOME_ASSISTANT_URL or not self.pipeline.valves.HOME_ASSISTANT_TOKEN:
+            if (
+                not self.pipeline.valves.HOME_ASSISTANT_URL
+                or not self.pipeline.valves.HOME_ASSISTANT_TOKEN
+            ):
                 return "Home Assistant URL or token not set, ask the user to set it up."
 
             # Normalize the light name by converting to lowercase and stripping extra spaces
@@ -81,7 +98,9 @@ class Pipeline(FunctionCallingBlueprint):
 
             # Find the closest matching light name
             light_names = list(lights.keys())
-            closest_matches = get_close_matches(normalized_name, light_names, n=1, cutoff=0.6)
+            closest_matches = get_close_matches(
+                normalized_name, light_names, n=1, cutoff=0.6
+            )
 
             if not closest_matches:
                 return f"Light named '{name}' not found."
@@ -94,9 +113,7 @@ class Pipeline(FunctionCallingBlueprint):
                 "Authorization": f"Bearer {self.pipeline.valves.HOME_ASSISTANT_TOKEN}",
                 "Content-Type": "application/json",
             }
-            payload = {
-                "entity_id": light_id
-            }
+            payload = {"entity_id": light_id}
 
             response = requests.post(url, headers=headers, json=payload)
             if response.status_code == 200:
