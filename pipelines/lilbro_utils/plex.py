@@ -1,7 +1,7 @@
 import requests
 import json
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 BASE_URL = ""
@@ -53,26 +53,31 @@ class AuthorMetadata:
     title: str
     ratingKey: str
     key: str
-    thumb: str
-    index: Optional[int]
     guid: str
     type: str
     summary: str
-    viewCount: Optional[int]
-    lastViewedAt: Optional[int]
-    addedAt: Optional[int]
-    updatedAt: int
-    Country: Optional[Any]
-    Location: List[Dict[str, str]]
-    Genre: Optional[List[TagData]]
-    Similar: Optional[List[TagData]]
+    thumb: str = ""
+    index: Optional[int] = None
+    viewCount: Optional[int] = None
+    lastViewedAt: Optional[int] = None
+    addedAt: Optional[int] = None
+    updatedAt: int = 0
+    Country: Optional[Any] = None
+    Location: List[Dict[str, str]] = field(default_factory=list)
+    Genre: Optional[List[TagData]] = None
+    Similar: Optional[List[TagData]] = None
+    titleSort: Optional[str] = None
+    Image: Optional[Any] = None
+    UltraBlurColors: Optional[Any] = None
+    skipCount: Optional[int] = None
+    art: Optional[str] = None
 
 
 @dataclass
 class ExpandedAuthorMetadata(AuthorMetadata):
-    librarySectionTitle: str
-    librarySectionID: str
-    librarySectionKey: str
+    librarySectionTitle: str = ""
+    librarySectionID: str = ""
+    librarySectionKey: str = ""
 
 
 @dataclass
@@ -89,24 +94,33 @@ class AuthorChildrenMetadata:
     summary: str
     index: int
     year: int
-    thumb: str
-    originallyAvailableAt: str
-    addedAt: int
-    updatedAt: int
-    loudnessAnalysisVersion: int
-    musicAnalysisVersion: int
-    Genre: List[TagData]
+    thumb: str = ""
+    originallyAvailableAt: str = ""
+    addedAt: int = 0
+    updatedAt: int = 0
+    loudnessAnalysisVersion: int = 0
+    musicAnalysisVersion: int = 0
+    Genre: List[TagData] = field(default_factory=list)
 
 
 @dataclass
 class AudiobookMetadata(AuthorChildrenMetadata):
-    leafCount: int
-    allowSync: bool
-    librarySectionID: int
-    librarySectionTitle: str
-    librarySectionUUID: str
-    lastViewedAt: int
-    Media: Optional[List[Any]]
+    leafCount: int = 0
+    allowSync: bool = True
+    librarySectionID: int = 0
+    librarySectionTitle: str = ""
+    librarySectionUUID: str = ""
+    lastViewedAt: int = 0
+    Media: Optional[List[Any]] = None
+    studio: Optional[str] = None
+    rating: Optional[str] = None
+    viewCount: Optional[int] = None
+    parentThumb: Optional[str] = None
+    Image: Optional[str] = None
+    UltraBlurColors: Optional[Any] = None
+    skipCount: Optional[int] = None
+    art: Optional[str] = None
+    titleSort: Optional[str] = None
 
 
 @dataclass

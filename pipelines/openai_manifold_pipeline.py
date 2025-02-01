@@ -28,6 +28,10 @@ class Pipeline:
             default="",
             description="Required API key to retrieve the model list.",
         )
+        DEBUG: bool = Field(
+            default=False,
+            description="Enable debug mode.",
+        )
         pass
 
     class UserValves(BaseModel):
@@ -115,15 +119,9 @@ class Pipeline:
 
         # https://platform.openai.com/docs/guides/reasoning/beta-limitations
         # Check if "o1" is in the model_id and re-assign system message to user message
-        if "o1" in model_id:
+        if "o1" in model_id or "o3" in model_id:
             if messages and messages[0].get("role") == "system":
-                messages[0]["role"] = "user"
-                messages[0]["content"] = (
-                    "The following is a general system message. Do not acknowledge this as part of the back and forth conversation, "
-                    "but rather just general context.\n\n======Start=====\n"
-                    + messages[0]["content"]
-                    + "\n=====End====="
-                )
+                messages[0]["role"] = "developer"
         # chat_meta = {
         #     "id": body.get("id", None),
         #     "session_id": body.get("session_id", None),
@@ -150,6 +148,8 @@ class Pipeline:
             del payload["max_tokens"]
 
         try:
+            if self.valves.DEBUG:
+                print(f"Payload: {payload}")
             r = requests.post(
                 url=f"{self.valves.OPENAI_API_BASE_URL}/chat/completions",
                 json=payload,
